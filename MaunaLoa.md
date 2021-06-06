@@ -30,9 +30,6 @@ NOTE: the predicted value in ppm is given just above the graph.
 ***
 
 ```{code-cell} ipython3
-#formatting from: https://kapernikov.com/ipywidgets-with-matplotlib/
-
-
 from ipywidgets import interact, GridspecLayout, Layout
 import ipywidgets as widgets
 import plotly.graph_objects as go
@@ -64,13 +61,18 @@ def predict_co2(slope, intercept, initial_date, prediction_date):
 
 
 # Setting up the widgets
-slope1_slider = widgets.FloatSlider(value = 0, min=0, max=3, step=0.05)
-slope2_slider = widgets.FloatSlider(value = 0, min=0, max=3, step=0.05) 
-intercept1_slider = widgets.FloatSlider(value=0, min=250, max=320, step=0.25)
-intercept2_slider = widgets.FloatSlider(value=0, min=250, max=320, step=0.25) 
+slope1_slider = widgets.FloatSlider(value = 0.55, min=0, max=3, step=0.05)
+slope2_slider = widgets.FloatSlider(value = 1.65, min=0, max=3, step=0.05) 
+intercept1_slider = widgets.FloatSlider(value=267.25, min=250, max=320, step=0.25)
+intercept2_slider = widgets.FloatSlider(value=309.5, min=250, max=320, step=0.25) 
 signal_type_radiobuttons = widgets.RadioButtons(value='Seasonally adjusted data', options=['Seasonally adjusted data', 'Raw data'])
 years_radiobuttons = widgets.RadioButtons(value='first 5 years', options=['first 5 years', 'last 5 years', 'All data'])
-
+#slope1_label = widgets.Label(r'$\textbf{Slope (for first 5 years):}$')
+slope1_label = widgets.Label("Slope (for first 5 years):", style={'font_weight': 'bold'})
+slope2_label = widgets.Label("Slope (for last 5 years):")
+intercept1_label = widgets.Label("Intercept (for first 5 years):")
+intercept2_label = widgets.Label("Intercept (for last 5 years):")
+signal_type_label = widgets.Label("Signal type:")
 
 def update_graph(line_slope_1st, line_intcpt_1st, line_slope_last, line_intcpt_last, Data_type, zone):
 
@@ -88,8 +90,8 @@ def update_graph(line_slope_1st, line_intcpt_1st, line_slope_last, line_intcpt_l
         plot.data[1].x = co2_data.date
         plot.data[1].y = l1
         
-        plot.data[1].x = co2_data.date
-        plot.data[1].y = l2
+        plot.data[2].x = co2_data.date
+        plot.data[2].y = l2
 
         if zone == 'first 5 years':
             plot.update_xaxes(range=[1958, 1963])
@@ -112,44 +114,65 @@ def update_graph(line_slope_1st, line_intcpt_1st, line_slope_last, line_intcpt_l
     
 def initialize_graph(line_slope_1st, line_intcpt_1st, line_slope_last, line_intcpt_last, Data_type, zone):
     plot.data = []
-    with plot.batch_update():
-        l1 = line_slope_1st * (co2_data.date - np.min(co2_data.date)) + line_intcpt_1st
-        l2 = line_slope_last * (co2_data.date - np.min(co2_data.date)) + line_intcpt_last
+    l1 = line_slope_1st * (co2_data.date - np.min(co2_data.date)) + line_intcpt_1st
+    l2 = line_slope_last * (co2_data.date - np.min(co2_data.date)) + line_intcpt_last
 
-        if Data_type == 'Raw data':
-            plot.add_trace(go.Scatter(x=co2_data.date, y=co2_data.raw_co2, mode='markers',
-                line=dict(color='MediumTurquoise'), name="CO2"))
-        if Data_type == 'Seasonally adjusted data':
-            plot.add_trace(go.Scatter(x=co2_data.date, y=co2_data.seasonally_adjusted, mode='markers',
-                line=dict(color='MediumTurquoise'), name="CO2"))
+    if Data_type == 'Raw data':
+        plot.add_trace(go.Scatter(x=co2_data.date, y=co2_data.raw_co2, mode='markers',
+            line=dict(color='MediumTurquoise'), name="CO2"))
+    if Data_type == 'Seasonally adjusted data':
+        plot.add_trace(go.Scatter(x=co2_data.date, y=co2_data.seasonally_adjusted, mode='markers',
+            line=dict(color='MediumTurquoise'), name="CO2"))
 
-        plot.add_trace(go.Scatter(x=co2_data.date, y=l1, mode='lines',
-            line=dict(color='SandyBrown'), name="linear fit (for 1st 5 years)"))
+    plot.add_trace(go.Scatter(x=co2_data.date, y=l1, mode='lines',
+        line=dict(color='SandyBrown'), name="linear fit (for first 5 years)"))
 
-        plot.add_trace(go.Scatter(x=co2_data.date, y=l2, mode='lines',
-            line=dict(color='MediumVioletRed'), name="linear fit (for last 5 years)"))
+    plot.add_trace(go.Scatter(x=co2_data.date, y=l2, mode='lines',
+        line=dict(color='MediumVioletRed'), name="linear fit (for last 5 years)"))
 
-        plot.update_layout(xaxis_title='Year', yaxis_title='ppm')
-    #    plot.update_xaxes(range=[start, end])
+    plot.update_layout(xaxis_title='Year', yaxis_title='ppm')
+#    plot.update_xaxes(range=[start, end])
 
-        if zone == 'first 5 years':
-            plot.update_xaxes(range=[1958, 1963])
-            plot.update_yaxes(range=[312, 322])
+    if zone == 'first 5 years':
+        plot.update_xaxes(range=[1958, 1963])
+        plot.update_yaxes(range=[312, 322])
 
-        if zone == 'last 5 years':
-            plot.update_xaxes(range=[2015, 2020])
-            plot.update_yaxes(range=[395, 415])
+    if zone == 'last 5 years':
+        plot.update_xaxes(range=[2015, 2020])
+        plot.update_yaxes(range=[395, 415])
 
-        if zone == 'All data':
-            plot.update_xaxes(range=[1955, 2023])
-            plot.update_yaxes(range=[310, 440])
+    if zone == 'All data':
+        plot.update_xaxes(range=[1955, 2023])
+        plot.update_yaxes(range=[310, 440])
 
-        predicted_co2_first = predict_co2(line_slope_1st, line_intcpt_1st, 1958, 2030)
-        predicted_co2_last = predict_co2(line_slope_last, line_intcpt_last, 1958, 2030)
-        plot.layout.title = f"""Predicted CO2 for {2030} (based on linear fit for <b>first</b> 5 years): {predicted_co2_first:1.2f} ppm.<br>
-    Predicted CO2 for {2030} (based on linear fit for <b>last</b> 5 years): {predicted_co2_last:1.2f} ppm."""
+    predicted_co2_first = predict_co2(line_slope_1st, line_intcpt_1st, 1958, 2030)
+    predicted_co2_last = predict_co2(line_slope_last, line_intcpt_last, 1958, 2030)
+    plot.layout.title = f"""Predicted CO2 for {2030} (based on linear fit for <b>first</b> 5 years): {predicted_co2_first:1.2f} ppm.<br>
+Predicted CO2 for {2030} (based on linear fit for <b>last</b> 5 years): {predicted_co2_last:1.2f} ppm."""
+
+def update_visibility(widget_array, display):
+    for w in widget_array:
+        w.layout.display = display
     
-
+def update_widgets(value):
+    if value == 'first 5 years':
+        slope1_slider.value = 0.55
+        intercept1_slider.value = 267.25
+        update_visibility([slope1_slider, intercept1_slider, slope1_label, intercept1_label], 'flex')
+        update_visibility([slope2_slider, intercept2_slider, slope2_label, intercept2_label], 'none')
+    elif value == 'last 5 years':
+        slope2_slider.value = 1.65
+        intercept2_slider.value = 309.5
+        update_visibility([slope1_slider, intercept1_slider, slope1_label, intercept1_label], 'none')
+        update_visibility([slope2_slider, intercept2_slider, slope2_label, intercept2_label], 'flex')
+    elif value == 'All data':
+        slope1_slider.value = 0.55
+        intercept1_slider.value = 267.25
+        slope2_slider.value = 1.65
+        intercept2_slider.value = 309.5
+        update_visibility([slope1_slider, slope2_slider, intercept1_slider, intercept2_slider, 
+                          slope1_label, slope2_label, intercept1_label, intercept2_label], 'flex')
+    
 def slope1_eventhandler(change):
     update_graph(change.new, intercept1_slider.value, slope2_slider.value, intercept2_slider.value, signal_type_radiobuttons.value, years_radiobuttons.value)
 def slope2_eventhandler(change):
@@ -161,6 +184,7 @@ def intercept2_eventhandler(change):
 def signal_type_eventhandler(change):
     update_graph(slope1_slider.value, intercept1_slider.value, slope2_slider.value, intercept2_slider.value, change.new, years_radiobuttons.value)
 def years_eventhandler(change):
+    update_widgets(change.new)
     update_graph(slope1_slider.value, intercept1_slider.value, slope2_slider.value, intercept2_slider.value, signal_type_radiobuttons.value, change.new)
 
 slope1_slider.observe(slope1_eventhandler, 'value')
@@ -178,28 +202,28 @@ scattf = plot.add_scatter()
 scatt = scattf.data[-1]
 
 initialize_graph(slope1_slider.value, intercept1_slider.value, slope2_slider.value, intercept2_slider.value, signal_type_radiobuttons.value, years_radiobuttons.value)
+update_widgets(years_radiobuttons.value)
 
+#Formatting widgets
+vbox1 = widgets.VBox([slope1_label,
+                      slope1_slider, 
+                      slope2_label, 
+                      slope2_slider, 
+                      signal_type_label, 
+                      signal_type_radiobuttons
+                     ])
 
-# Initialize grid
-grid = GridspecLayout(7, 2, height='275px')
+vbox2 = widgets.VBox([intercept1_label, 
+                      intercept1_slider, 
+                      intercept2_label,
+                      intercept2_slider,
+                      widgets.Label(""),
+                      years_radiobuttons
+                     ])
 
-grid[0, 0] = widgets.Label("Slope (for first 5 years):")
-grid[1, 0] = slope1_slider
-grid[2, 0] = widgets.Label("Slope (for last 5 years):")
-grid[3, 0] = slope2_slider
-grid[4, 0] = widgets.Label("Signal type:")
-grid[5, 0] = signal_type_radiobuttons
+hbox = widgets.HBox([vbox1, vbox2])
 
-grid[0, 1] = widgets.Label("Intercept (for first years):")
-grid[1, 1] = intercept1_slider
-grid[2, 1] = widgets.Label("Intercept (for last years):")
-grid[3, 1] = intercept2_slider
-grid[5, 1] = years_radiobuttons
-
-
-display(grid)
-
-widgets.VBox([plot])
+widgets.VBox([hbox, plot])
 ```
 
 ***
