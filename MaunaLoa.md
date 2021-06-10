@@ -12,12 +12,6 @@ kernelspec:
   name: python3
 ---
 
-+++ {"extensions": {"jupyter_dashboards": {"views": {"grid_default": {}, "report_default": {"hidden": true}}, "version": 1}}}
-
-* set limits on sliders that are "narrower", and more appropriate for each of the lines. Also initialize so both lines are visible but not "correct" (I think one is visible but the other starts "off screen").
-* consider a few more comments for those who will maintain this in the future. Include pointers to sources you used to figure out how - like the comment at "# for handling NaN's se... ".
-* Can you see what the options are for having the code cell "hidden" so that the user can see only the markdown cell and the output when the notebook is run? There may be a range of options for doing this in Jupyter Notebooks and we would taylor the app depending on its purpose. One like this would not involve students adjusting code, so it would be better if the code was not visible.
-
 +++ {"extensions": {"jupyter_dashboards": {"views": {"grid_default": {}, "report_default": {"hidden": false}}, "version": 1}}}
 
 ### Approximate linear models for CO2 at Mauna Loa, Hawaii
